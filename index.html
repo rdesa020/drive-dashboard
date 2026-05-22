@@ -887,10 +887,10 @@
     allFiles = [];
 
     try {
+      // ── Phase 1: fetch file metadata fast (pageSize=1000), render immediately ──
       let pageToken = null;
-
       do {
-        let url = `https://www.googleapis.com/drive/v3/files?pageSize=100&fields=nextPageToken,files(id,name,mimeType,createdTime,modifiedTime,webViewLink,shared,ownedByMe,owners,parents,size,quotaBytesUsed)&includeItemsFromAllDrives=false&q=trashed=false`;
+        let url = `https://www.googleapis.com/drive/v3/files?pageSize=1000&fields=nextPageToken,files(id,name,mimeType,createdTime,modifiedTime,webViewLink,shared,ownedByMe,owners,parents,size,quotaBytesUsed)&includeItemsFromAllDrives=false&q=trashed=false`;
         if (pageToken) url += `&pageToken=${pageToken}`;
 
         const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
@@ -904,25 +904,28 @@
         if (!res.ok) throw new Error(`Drive API error ${res.status}`);
         const data = await res.json();
 
-        const pageFiles = data.files || [];
-        for (let i = 0; i < pageFiles.length; i += 10) {
-          const batch = pageFiles.slice(i, i + 10);
-          await Promise.all(batch.map(async file => {
-            file.permissionDetails = await fetchPermissions(file.id);
-          }));
-          allFiles.push(...batch);
-          btn.textContent = `⟳ Loading… ${allFiles.length} files`;
-          await resolveFolderNames();
-          updateStats();
-          applyFilter();
-        }
-
+        allFiles.push(...(data.files || []));
         pageToken = data.nextPageToken;
-
+        btn.textContent = `⟳ Loading… ${allFiles.length} files`;
+        await resolveFolderNames();
+        updateStats();
+        applyFilter();
       } while (pageToken);
 
-      // Build folder name map
-      await resolveFolderNames();
+      // ── Phase 2: fetch permissions in background, larger batches of 20 ──
+      const PERM_BATCH = 20;
+      for (let i = 0; i < allFiles.length; i += PERM_BATCH) {
+        const batch = allFiles.slice(i, i + PERM_BATCH);
+        await Promise.all(batch.map(async file => {
+          if (!file.permissionDetails) {
+            file.permissionDetails = await fetchPermissions(file.id);
+          }
+        }));
+        btn.textContent = `⟳ Permissions… ${Math.min(i + PERM_BATCH, allFiles.length)}/${allFiles.length}`;
+        updateStats();
+        applyFilter();
+      }
+
       updateStats();
       applyFilter();
     } catch (e) {
