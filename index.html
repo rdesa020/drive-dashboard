@@ -994,9 +994,10 @@
     while (cur && !seen.has(cur) && segments.length < 10) {
       seen.add(cur);
       const info = folderInfoCache[cur];
-      if (!info) break;                       // unknown node — stop
+      if (!info) break;
       segments.unshift({ id: cur, name: info.name });
-      if (!info.parentId) { reachedRoot = true; break; }  // this node IS the root
+      // Stop at any node named "My Drive" or with no parent — both mean root
+      if (!info.parentId || info.name === 'My Drive') { reachedRoot = true; break; }
       cur = info.parentId;
     }
 
