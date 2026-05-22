@@ -785,7 +785,7 @@
       let pageToken = null;
 
       do {
-        let url = `https://www.googleapis.com/drive/v3/files?pageSize=100&fields=nextPageToken,files(id,name,mimeType,createdTime,modifiedTime,webViewLink,shared,ownedByMe,parents,size,quotaBytesUsed)&includeItemsFromAllDrives=false&q=trashed=false`;
+        let url = `https://www.googleapis.com/drive/v3/files?pageSize=100&fields=nextPageToken,files(id,name,mimeType,createdTime,modifiedTime,webViewLink,shared,ownedByMe,owners,parents,size,quotaBytesUsed)&includeItemsFromAllDrives=false&q=trashed=false`;
         if (pageToken) url += `&pageToken=${pageToken}`;
 
         const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
@@ -1032,25 +1032,28 @@
           </div>`
         : anyonePerm
         ? `<div class="access-item"><div class="access-dot" style="background:var(--orange)"></div><div style="font-size:12px;flex:1">Anyone with link</div><span class="role-tag commenter">${anyonePerm.role}</span></div>`
+        : file.ownedByMe === false
+        ? `<span style="color:var(--muted);font-size:12px">—</span>`
         : `<span style="color:var(--muted);font-size:12px">Only you</span>`;
 
       const nameHtml = file.webViewLink
         ? `<a href="${file.webViewLink}" target="_blank">${escHtml(file.name)}</a>`
         : escHtml(file.name);
 
-      const ownerHtml = ownerPerm
+      const owner = (file.owners || [])[0];
+      const ownerHtml = file.ownedByMe
+        ? `<span style="font-size:12px;color:var(--muted)">You</span>`
+        : owner
         ? `<div style="font-size:12px">
-            <div style="font-weight:500;color:var(--text)">${escHtml(ownerPerm.displayName || ownerPerm.emailAddress || 'Unknown')}</div>
-            ${ownerPerm.emailAddress ? `<div style="color:var(--muted);font-size:11px">${escHtml(ownerPerm.emailAddress)}</div>` : ''}
+            <div style="font-weight:500;color:var(--text)">${escHtml(owner.displayName || owner.emailAddress || 'Unknown')}</div>
+            ${owner.emailAddress ? `<div style="color:var(--muted);font-size:11px">${escHtml(owner.emailAddress)}</div>` : ''}
            </div>`
-        : file.ownedByMe === false
-        ? `<span style="font-size:12px;color:var(--muted)">Shared to you</span>`
-        : `<span style="font-size:12px;color:var(--muted)">You</span>`;
+        : `<span style="font-size:12px;color:var(--muted)">Unknown</span>`;
 
       const parentId = (file.parents || [])[0];
       const folderName = parentId ? (folderNameCache[parentId] || 'My Drive') : 'My Drive';
       const folderHtml = `<span style="font-size:12px;color:var(--muted)">📁 ${escHtml(folderName)}</span>`;
-      const manageBtnHtml = file.ownedByMe
+      const manageBtnHtml = file.ownedByMe !== false
         ? `<div><button class="manage-share-btn" onclick="openShareModal('${file.id}')">⚙ Manage sharing</button></div>`
         : '';
 
