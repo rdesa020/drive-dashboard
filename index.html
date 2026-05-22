@@ -339,6 +339,31 @@
   .page-btn:disabled { opacity: .4; cursor: not-allowed; }
   .page-info { font-size: 13px; color: var(--muted); padding: 0 8px; }
 
+  /* Column header dropdowns */
+  .col-header { display:flex; align-items:center; gap:3px; }
+  .col-arrow {
+    width:16px; height:16px; border-radius:3px; border:none; background:transparent;
+    display:inline-flex; align-items:center; justify-content:center;
+    cursor:pointer; color:var(--muted); font-size:10px; transition:all .15s;
+    flex-shrink:0; font-family:inherit; padding:0; line-height:1;
+  }
+  .col-arrow:hover { background:var(--border); color:var(--text); }
+  .col-arrow.active { background:var(--blue-light); color:var(--blue); }
+  .col-dropdown {
+    position:absolute; top:calc(100% + 2px); left:0; z-index:300;
+    background:white; border:1px solid var(--border);
+    border-radius:var(--radius-sm); box-shadow:var(--shadow);
+    min-width:160px; padding:4px 0; display:none;
+  }
+  .col-dropdown.open { display:block; }
+  .col-dd-item {
+    padding:7px 12px; font-size:12.5px; cursor:pointer; color:var(--text);
+    transition:background .1s; display:flex; align-items:center; gap:8px;
+    text-transform:none; letter-spacing:0; font-weight:400; white-space:nowrap;
+  }
+  .col-dd-item:hover { background:var(--bg); }
+  .col-dd-item.selected { color:var(--blue); background:var(--blue-light); font-weight:500; }
+
   @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
@@ -419,11 +444,6 @@
         <span>🔍</span>
         <input type="text" id="search-input" placeholder="Search files, emails, names…" oninput="filterFiles()">
       </div>
-      <button class="filter-btn" id="filter-all"    onclick="setFilter('all')"    >All</button>
-      <button class="filter-btn" id="filter-shared" onclick="setFilter('shared')" >Shared</button>
-      <button class="filter-btn" id="filter-public" onclick="setFilter('public')" >Public</button>
-      <button class="filter-btn" id="filter-private"onclick="setFilter('private')">Private</button>
-      <button class="filter-btn" id="filter-folders"onclick="setFilter('folders')">📁 Folders Only</button>
       <button class="refresh-btn" id="refresh-btn" onclick="loadFiles()">⟳ Refresh</button>
     </div>
 
@@ -449,14 +469,69 @@
         <thead>
           <tr>
             <th style="width:32%">File Name</th>
-            <th>Type</th>
+            <th style="position:relative">
+              <div class="col-header">Type <button class="col-arrow" id="arr-type" onclick="toggleDropdown('type',event)">▾</button></div>
+              <div class="col-dropdown" id="dd-type">
+                <div class="col-dd-item selected" data-val="all" onclick="setColFilter('type','all',event)">All Types</div>
+                <div class="col-dd-item" data-val="folder" onclick="setColFilter('type','folder',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M2 6.5C2 5.67 2.67 5 3.5 5H7.8L9.3 6.5H16.5c.83 0 1.5.67 1.5 1.5v7c0 .83-.67 1.5-1.5 1.5h-13C2.67 16 2 15.33 2 14.5V6.5z" fill="#FCC934"/></svg>Folder</div>
+                <div class="col-dd-item" data-val="doc" onclick="setColFilter('type','doc',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="#4285F4"/><path d="M12 2v4.5h4" fill="none" stroke="#6ba7f5" stroke-width="1.2"/><rect x="6.5" y="9" width="7" height="1.2" rx=".6" fill="white" opacity=".9"/><rect x="6.5" y="11.5" width="7" height="1.2" rx=".6" fill="white" opacity=".9"/><rect x="6.5" y="14" width="4.5" height="1.2" rx=".6" fill="white" opacity=".9"/></svg>Doc</div>
+                <div class="col-dd-item" data-val="sheet" onclick="setColFilter('type','sheet',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="#0F9D58"/><path d="M12 2v4.5h4" fill="none" stroke="#52c592" stroke-width="1.2"/><path d="M6.5 9.5h7M6.5 12h7M10 9.5V15" stroke="white" stroke-width="1" opacity=".75"/></svg>Sheet</div>
+                <div class="col-dd-item" data-val="slides" onclick="setColFilter('type','slides',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="#F9AB00"/><path d="M12 2v4.5h4" fill="none" stroke="#fcc84a" stroke-width="1.2"/><rect x="6.5" y="9" width="7" height="5" rx=".75" fill="white" opacity=".45"/></svg>Slides</div>
+                <div class="col-dd-item" data-val="pdf" onclick="setColFilter('type','pdf',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="#EA4335"/><path d="M12 2v4.5h4" fill="none" stroke="#f07a72" stroke-width="1.2"/><text x="10" y="15" text-anchor="middle" fill="white" font-size="5.5" font-weight="700" font-family="sans-serif">PDF</text></svg>PDF</div>
+                <div class="col-dd-item" data-val="image" onclick="setColFilter('type','image',event)"><svg width="14" height="14" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="2" fill="#00ACC1"/><circle cx="7" cy="8.5" r="1.5" fill="white" opacity=".8"/><path d="M2 14l4-4 3 3 2.5-3 5.5 5" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round" opacity=".8"/></svg>Image</div>
+                <div class="col-dd-item" data-val="video" onclick="setColFilter('type','video',event)"><svg width="14" height="14" viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="12" rx="2" fill="#3F51B5"/><path d="M8 7.5l5.5 2.5L8 12.5V7.5z" fill="white" opacity=".9"/></svg>Video</div>
+                <div class="col-dd-item" data-val="audio" onclick="setColFilter('type','audio',event)"><svg width="14" height="14" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="3" fill="#FF7043"/><path d="M13 7V12a2 2 0 11-1.5-1.94V8.5L8 9.5V14a2 2 0 11-1.5-1.94V8.5l6.5-1.5z" fill="white" opacity=".85"/></svg>Audio</div>
+                <div class="col-dd-item" data-val="form" onclick="setColFilter('type','form',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="#673AB7"/><path d="M12 2v4.5h4" fill="none" stroke="#9c74d4" stroke-width="1.2"/><rect x="6.5" y="9" width="2" height="1.2" rx=".6" fill="white" opacity=".8"/><rect x="9.5" y="9" width="4" height="1.2" rx=".6" fill="white" opacity=".8"/><rect x="6.5" y="11.5" width="2" height="1.2" rx=".6" fill="white" opacity=".8"/><rect x="9.5" y="11.5" width="4" height="1.2" rx=".6" fill="white" opacity=".8"/></svg>Form</div>
+                <div class="col-dd-item" data-val="file" onclick="setColFilter('type','file',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="#9E9E9E"/><path d="M12 2v4.5h4" fill="none" stroke="#bdbdbd" stroke-width="1.2"/></svg>Other</div>
+              </div>
+            </th>
             <th>Folder</th>
-            <th>Owner</th>
-            <th>Visibility</th>
-            <th style="width:28%">Shared With</th>
-            <th>Size</th>
-            <th>Created</th>
-            <th>Last Modified</th>
+            <th style="position:relative">
+              <div class="col-header">Owner <button class="col-arrow" id="arr-owner" onclick="toggleDropdown('owner',event)">▾</button></div>
+              <div class="col-dropdown" id="dd-owner">
+                <div class="col-dd-item selected" data-val="all" onclick="setColFilter('owner','all',event)">All</div>
+                <div class="col-dd-item" data-val="mine" onclick="setColFilter('owner','mine',event)">Owned by me</div>
+                <div class="col-dd-item" data-val="theirs" onclick="setColFilter('owner','theirs',event)">Shared to me</div>
+              </div>
+            </th>
+            <th style="position:relative">
+              <div class="col-header">Visibility <button class="col-arrow" id="arr-visibility" onclick="toggleDropdown('visibility',event)">▾</button></div>
+              <div class="col-dropdown" id="dd-visibility">
+                <div class="col-dd-item selected" data-val="all" onclick="setColFilter('visibility','all',event)">All</div>
+                <div class="col-dd-item" data-val="private" onclick="setColFilter('visibility','private',event)">Private</div>
+                <div class="col-dd-item" data-val="shared" onclick="setColFilter('visibility','shared',event)">Specific people</div>
+                <div class="col-dd-item" data-val="public" onclick="setColFilter('visibility','public',event)">Anyone with link</div>
+              </div>
+            </th>
+            <th style="width:28%;position:relative">
+              <div class="col-header">Shared With <button class="col-arrow" id="arr-sharedWith" onclick="toggleDropdown('sharedWith',event)">▾</button></div>
+              <div class="col-dropdown" id="dd-sharedWith">
+                <div class="col-dd-item selected" data-val="all" onclick="setColFilter('sharedWith','all',event)">All</div>
+                <div class="col-dd-item" data-val="only-me" onclick="setColFilter('sharedWith','only-me',event)">Only me</div>
+                <div class="col-dd-item" data-val="others" onclick="setColFilter('sharedWith','others',event)">Shared with others</div>
+              </div>
+            </th>
+            <th style="position:relative">
+              <div class="col-header">Size <button class="col-arrow" id="arr-size" onclick="toggleDropdown('size',event)">↕</button></div>
+              <div class="col-dropdown" id="dd-size">
+                <div class="col-dd-item" data-dir="desc" onclick="setColSort('size','desc',event)">Largest first</div>
+                <div class="col-dd-item" data-dir="asc" onclick="setColSort('size','asc',event)">Smallest first</div>
+              </div>
+            </th>
+            <th style="position:relative">
+              <div class="col-header">Created <button class="col-arrow" id="arr-created" onclick="toggleDropdown('created',event)">↕</button></div>
+              <div class="col-dropdown" id="dd-created">
+                <div class="col-dd-item" data-dir="desc" onclick="setColSort('created','desc',event)">Newest first</div>
+                <div class="col-dd-item" data-dir="asc" onclick="setColSort('created','asc',event)">Oldest first</div>
+              </div>
+            </th>
+            <th style="position:relative">
+              <div class="col-header">Last Modified <button class="col-arrow" id="arr-modified" onclick="toggleDropdown('modified',event)">↕</button></div>
+              <div class="col-dropdown" id="dd-modified">
+                <div class="col-dd-item" data-dir="desc" onclick="setColSort('modified','desc',event)">Newest first</div>
+                <div class="col-dd-item" data-dir="asc" onclick="setColSort('modified','asc',event)">Oldest first</div>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody id="files-tbody"></tbody>
@@ -476,11 +551,6 @@
         <span>🔍</span>
         <input type="text" id="search-input-bottom" placeholder="Search files, emails, names…" oninput="document.getElementById('search-input').value=this.value;filterFiles()">
       </div>
-      <button class="filter-btn" onclick="setFilter('all')"    >All</button>
-      <button class="filter-btn" onclick="setFilter('shared')" >Shared</button>
-      <button class="filter-btn" onclick="setFilter('public')" >Public</button>
-      <button class="filter-btn" onclick="setFilter('private')">Private</button>
-      <button class="filter-btn" onclick="setFilter('folders')">📁 Folders Only</button>
       <button class="refresh-btn" onclick="loadFiles()">⟳ Refresh</button>
     </div>
 
@@ -513,7 +583,8 @@
   let accessToken = null;
   let allFiles = [];
   let filteredFiles = [];
-  let currentFilter = 'all';
+  let colFilters = { type: 'all', owner: 'all', visibility: 'all', sharedWith: 'all' };
+  let sortConfig = { col: null, dir: 'asc' };
   let currentPage = 1;
   const PAGE_SIZE = 25;
 
@@ -701,14 +772,47 @@
     return 'private';
   }
 
-  function setFilter(f) {
-    currentFilter = f;
-    ['all','shared','public','private','folders'].forEach(x => {
-      document.getElementById('filter-'+x).classList.toggle('active', x === f);
+  function toggleDropdown(col, e) {
+    e.stopPropagation();
+    document.querySelectorAll('.col-dropdown').forEach(d => {
+      if (d.id !== 'dd-' + col) d.classList.remove('open');
     });
+    document.getElementById('dd-' + col).classList.toggle('open');
+  }
+
+  function setColFilter(col, val, e) {
+    e.stopPropagation();
+    colFilters[col] = val;
+    document.querySelectorAll('#dd-' + col + ' .col-dd-item').forEach(item => {
+      item.classList.toggle('selected', item.dataset.val === val);
+    });
+    const arrow = document.getElementById('arr-' + col);
+    if (arrow) arrow.classList.toggle('active', val !== 'all');
+    document.getElementById('dd-' + col).classList.remove('open');
     currentPage = 1;
     applyFilter();
   }
+
+  function setColSort(col, dir, e) {
+    e.stopPropagation();
+    sortConfig = { col, dir };
+    ['size','created','modified'].forEach(c => {
+      const arr = document.getElementById('arr-' + c);
+      if (!arr) return;
+      arr.textContent = (c === col) ? (dir === 'asc' ? '↑' : '↓') : '↕';
+      arr.classList.toggle('active', c === col);
+      document.querySelectorAll('#dd-' + c + ' .col-dd-item').forEach(item => {
+        item.classList.toggle('selected', c === col && item.dataset.dir === dir);
+      });
+    });
+    document.getElementById('dd-' + col).classList.remove('open');
+    currentPage = 1;
+    applyFilter();
+  }
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.col-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
 
   function filterFiles() {
     currentPage = 1;
@@ -719,19 +823,40 @@
     const q = document.getElementById('search-input').value.toLowerCase();
 
     filteredFiles = allFiles.filter(file => {
-      const vis = getVisibility(file);
-      if (currentFilter === 'folders') {
-        if (file.mimeType !== 'application/vnd.google-apps.folder') return false;
-      } else if (currentFilter !== 'all' && vis !== currentFilter) return false;
-
+      if (colFilters.type !== 'all' && getMimeCategory(file.mimeType) !== colFilters.type) return false;
+      if (colFilters.owner === 'mine'   && file.ownedByMe === false)  return false;
+      if (colFilters.owner === 'theirs' && file.ownedByMe !== false)  return false;
+      if (colFilters.visibility !== 'all' && getVisibility(file) !== colFilters.visibility) return false;
+      if (colFilters.sharedWith !== 'all') {
+        const hasOthers = (file.permissionDetails || []).some(p => p.type === 'user' || p.type === 'group' || p.type === 'anyone');
+        if (colFilters.sharedWith === 'only-me' && hasOthers)  return false;
+        if (colFilters.sharedWith === 'others'  && !hasOthers) return false;
+      }
       if (q) {
-        const name = (file.name || '').toLowerCase();
+        const name   = (file.name || '').toLowerCase();
         const emails = (file.permissionDetails || []).map(p => (p.emailAddress || '').toLowerCase()).join(' ');
         const names  = (file.permissionDetails || []).map(p => (p.displayName  || '').toLowerCase()).join(' ');
         if (!name.includes(q) && !emails.includes(q) && !names.includes(q)) return false;
       }
       return true;
     });
+
+    if (sortConfig.col) {
+      filteredFiles.sort((a, b) => {
+        let av, bv;
+        if (sortConfig.col === 'size') {
+          av = parseInt(a.size || a.quotaBytesUsed || 0);
+          bv = parseInt(b.size || b.quotaBytesUsed || 0);
+        } else if (sortConfig.col === 'created') {
+          av = new Date(a.createdTime  || 0).getTime();
+          bv = new Date(b.createdTime  || 0).getTime();
+        } else if (sortConfig.col === 'modified') {
+          av = new Date(a.modifiedTime || 0).getTime();
+          bv = new Date(b.modifiedTime || 0).getTime();
+        }
+        return sortConfig.dir === 'asc' ? av - bv : bv - av;
+      });
+    }
 
     renderTable();
   }
@@ -751,7 +876,7 @@
 
     tbody.innerHTML = page.map(file => {
       const vis  = getVisibility(file);
-      const icon = getMimeIcon(file.mimeType);
+      const icon = getMimeIconSVG(file.mimeType);
       const type = getMimeLabel(file.mimeType);
       const created  = formatDate(file.createdTime);
       const modified = formatDate(file.modifiedTime);
@@ -801,7 +926,7 @@
       const folderHtml = `<span style="font-size:12px;color:var(--muted)">📁 ${escHtml(folderName)}</span>`;
 
       return `<tr>
-        <td><div class="file-cell"><span class="file-icon">${icon}</span><div class="file-name">${nameHtml}</div></div></td>
+        <td><div class="file-cell">${icon}<div class="file-name">${nameHtml}</div></div></td>
         <td><span style="font-size:12px;color:var(--muted)">${type}</span></td>
         <td>${folderHtml}</td>
         <td>${ownerHtml}</td>
@@ -856,19 +981,49 @@
   }
 
   // ── Helpers ──
-  function getMimeIcon(mime) {
-    if (!mime) return '📄';
-    if (mime.includes('folder'))       return '📁';
-    if (mime.includes('spreadsheet') || mime.includes('excel')) return '📊';
-    if (mime.includes('document') || mime.includes('word'))     return '📝';
-    if (mime.includes('presentation') || mime.includes('powerpoint')) return '📑';
-    if (mime.includes('pdf'))          return '📕';
-    if (mime.includes('image'))        return '🖼️';
-    if (mime.includes('video'))        return '🎬';
-    if (mime.includes('audio'))        return '🎵';
-    if (mime.includes('zip') || mime.includes('compressed')) return '🗜️';
-    if (mime.includes('form'))         return '📋';
-    return '📄';
+  function getMimeCategory(mime) {
+    if (!mime) return 'file';
+    if (mime.includes('folder'))       return 'folder';
+    if (mime.includes('spreadsheet') || mime.includes('excel')) return 'sheet';
+    if (mime.includes('document') || mime.includes('word'))     return 'doc';
+    if (mime.includes('presentation') || mime.includes('powerpoint')) return 'slides';
+    if (mime.includes('pdf'))          return 'pdf';
+    if (mime.includes('image'))        return 'image';
+    if (mime.includes('video'))        return 'video';
+    if (mime.includes('audio'))        return 'audio';
+    if (mime.includes('zip') || mime.includes('compressed')) return 'zip';
+    if (mime.includes('form'))         return 'form';
+    return 'file';
+  }
+
+  function getMimeIconSVG(mime) {
+    const doc = (color, stroke, extra = '') =>
+      `<svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink:0"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="${color}"/><path d="M12 2v4.5h4" fill="none" stroke="${stroke}" stroke-width="1.2"/>${extra}</svg>`;
+    const cat = getMimeCategory(mime);
+    switch (cat) {
+      case 'folder':
+        return `<svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink:0"><path d="M2 6.5C2 5.67 2.67 5 3.5 5H7.8L9.3 6.5H16.5c.83 0 1.5.67 1.5 1.5v7c0 .83-.67 1.5-1.5 1.5h-13C2.67 16 2 15.33 2 14.5V6.5z" fill="#FCC934"/></svg>`;
+      case 'doc':
+        return doc('#4285F4','#6ba7f5',`<rect x="6.5" y="9" width="7" height="1.2" rx=".6" fill="white" opacity=".9"/><rect x="6.5" y="11.5" width="7" height="1.2" rx=".6" fill="white" opacity=".9"/><rect x="6.5" y="14" width="4.5" height="1.2" rx=".6" fill="white" opacity=".9"/>`);
+      case 'sheet':
+        return doc('#0F9D58','#52c592',`<path d="M6.5 9.5h7M6.5 12h7M10 9.5V15" stroke="white" stroke-width="1" opacity=".75"/>`);
+      case 'slides':
+        return doc('#F9AB00','#fcc84a',`<rect x="6.5" y="9" width="7" height="5" rx=".75" fill="white" opacity=".45"/>`);
+      case 'pdf':
+        return doc('#EA4335','#f07a72',`<text x="10" y="15" text-anchor="middle" fill="white" font-size="5.5" font-weight="700" font-family="sans-serif">PDF</text>`);
+      case 'image':
+        return `<svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink:0"><rect x="2" y="4" width="16" height="12" rx="2" fill="#00ACC1"/><circle cx="7" cy="8.5" r="1.5" fill="white" opacity=".8"/><path d="M2 14l4-4 3 3 2.5-3 5.5 5" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round" opacity=".8"/></svg>`;
+      case 'video':
+        return `<svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink:0"><rect x="2" y="4" width="16" height="12" rx="2" fill="#3F51B5"/><path d="M8 7.5l5.5 2.5L8 12.5V7.5z" fill="white" opacity=".9"/></svg>`;
+      case 'audio':
+        return `<svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink:0"><rect x="2" y="2" width="16" height="16" rx="3" fill="#FF7043"/><path d="M13 7V12a2 2 0 11-1.5-1.94V8.5L8 9.5V14a2 2 0 11-1.5-1.94V8.5l6.5-1.5z" fill="white" opacity=".85"/></svg>`;
+      case 'form':
+        return doc('#673AB7','#9c74d4',`<rect x="6.5" y="9" width="2" height="1.2" rx=".6" fill="white" opacity=".8"/><rect x="9.5" y="9" width="4" height="1.2" rx=".6" fill="white" opacity=".8"/><rect x="6.5" y="11.5" width="2" height="1.2" rx=".6" fill="white" opacity=".8"/><rect x="9.5" y="11.5" width="4" height="1.2" rx=".6" fill="white" opacity=".8"/>`);
+      case 'zip':
+        return doc('#795548','#a1887f',`<rect x="8.5" y="7.5" width="3" height="2" rx=".5" fill="white" opacity=".5"/><rect x="8.5" y="10.5" width="3" height="1.5" rx=".5" fill="white" opacity=".7"/><rect x="8.5" y="13" width="3" height="1.5" rx=".5" fill="white" opacity=".7"/>`);
+      default:
+        return doc('#9E9E9E','#bdbdbd');
+    }
   }
 
   function getMimeLabel(mime) {
@@ -914,9 +1069,6 @@
   function hideEmpty()   { document.getElementById('empty-state').style.display = 'none'; }
   function showError(msg){ const b = document.getElementById('error-banner'); b.textContent = '⚠️ ' + msg; b.style.display = 'block'; }
   function hideError()   { document.getElementById('error-banner').style.display = 'none'; }
-
-  // Set default filter
-  setFilter('all');
 
 
 </script>
