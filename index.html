@@ -1447,6 +1447,7 @@
 
   function openBulkShareModal() {
     bulkAction = 'share';
+    populateKnownPeople();
     document.getElementById('bulk-modal-title').textContent = `Share ${selectedFiles.size} file${selectedFiles.size !== 1 ? 's' : ''} with…`;
     document.getElementById('bulk-modal-body').innerHTML = `
       <div style="display:flex;gap:8px;align-items:flex-start">
@@ -1472,6 +1473,7 @@
 
   function openBulkRemoveModal() {
     bulkAction = 'remove';
+    populateKnownPeople();
     document.getElementById('bulk-modal-title').textContent = `Remove access from ${selectedFiles.size} file${selectedFiles.size !== 1 ? 's' : ''}`;
     document.getElementById('bulk-modal-body').innerHTML = `
       <p style="font-size:13px;color:var(--muted);margin:0 0 12px">Enter the email of the person whose access you want to remove from all selected files.</p>
