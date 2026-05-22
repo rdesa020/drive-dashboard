@@ -340,7 +340,7 @@
   .page-info { font-size: 13px; color: var(--muted); padding: 0 8px; }
 
   /* Column header dropdowns */
-  .col-header { display:flex; align-items:center; gap:3px; }
+  .col-header { display:flex; align-items:center; gap:3px; cursor:pointer; user-select:none; }
   .col-arrow {
     width:16px; height:16px; border-radius:3px; border:none; background:transparent;
     display:inline-flex; align-items:center; justify-content:center;
@@ -470,8 +470,8 @@
           <tr>
             <th style="width:32%">File Name</th>
             <th style="position:relative">
-              <div class="col-header">Type <button class="col-arrow" id="arr-type" onclick="toggleDropdown('type',event)">▾</button></div>
-              <div class="col-dropdown" id="dd-type">
+              <div class="col-header" onclick="toggleDropdown('type',event)">Type <button class="col-arrow" id="arr-type">▾</button></div>
+              <div class="col-dropdown" id="dd-type" onclick="event.stopPropagation()">
                 <div class="col-dd-item selected" data-val="all" onclick="setColFilter('type','all',event)">All Types</div>
                 <div class="col-dd-item" data-val="folder" onclick="setColFilter('type','folder',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M2 6.5C2 5.67 2.67 5 3.5 5H7.8L9.3 6.5H16.5c.83 0 1.5.67 1.5 1.5v7c0 .83-.67 1.5-1.5 1.5h-13C2.67 16 2 15.33 2 14.5V6.5z" fill="#FCC934"/></svg>Folder</div>
                 <div class="col-dd-item" data-val="doc" onclick="setColFilter('type','doc',event)"><svg width="14" height="14" viewBox="0 0 20 20"><path d="M5 2h7l4 4.5V17a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" fill="#4285F4"/><path d="M12 2v4.5h4" fill="none" stroke="#6ba7f5" stroke-width="1.2"/><rect x="6.5" y="9" width="7" height="1.2" rx=".6" fill="white" opacity=".9"/><rect x="6.5" y="11.5" width="7" height="1.2" rx=".6" fill="white" opacity=".9"/><rect x="6.5" y="14" width="4.5" height="1.2" rx=".6" fill="white" opacity=".9"/></svg>Doc</div>
@@ -487,16 +487,16 @@
             </th>
             <th>Folder</th>
             <th style="position:relative">
-              <div class="col-header">Owner <button class="col-arrow" id="arr-owner" onclick="toggleDropdown('owner',event)">▾</button></div>
-              <div class="col-dropdown" id="dd-owner">
+              <div class="col-header" onclick="toggleDropdown('owner',event)">Owner <button class="col-arrow" id="arr-owner">▾</button></div>
+              <div class="col-dropdown" id="dd-owner" onclick="event.stopPropagation()">
                 <div class="col-dd-item selected" data-val="all" onclick="setColFilter('owner','all',event)">All</div>
                 <div class="col-dd-item" data-val="mine" onclick="setColFilter('owner','mine',event)">Owned by me</div>
                 <div class="col-dd-item" data-val="theirs" onclick="setColFilter('owner','theirs',event)">Shared to me</div>
               </div>
             </th>
             <th style="position:relative">
-              <div class="col-header">Visibility <button class="col-arrow" id="arr-visibility" onclick="toggleDropdown('visibility',event)">▾</button></div>
-              <div class="col-dropdown" id="dd-visibility">
+              <div class="col-header" onclick="toggleDropdown('visibility',event)">Visibility <button class="col-arrow" id="arr-visibility">▾</button></div>
+              <div class="col-dropdown" id="dd-visibility" onclick="event.stopPropagation()">
                 <div class="col-dd-item selected" data-val="all" onclick="setColFilter('visibility','all',event)">All</div>
                 <div class="col-dd-item" data-val="private" onclick="setColFilter('visibility','private',event)">Private</div>
                 <div class="col-dd-item" data-val="shared" onclick="setColFilter('visibility','shared',event)">Specific people</div>
@@ -504,30 +504,30 @@
               </div>
             </th>
             <th style="width:28%;position:relative">
-              <div class="col-header">Shared With <button class="col-arrow" id="arr-sharedWith" onclick="toggleDropdown('sharedWith',event)">▾</button></div>
-              <div class="col-dropdown" id="dd-sharedWith">
+              <div class="col-header" onclick="toggleDropdown('sharedWith',event)">Shared With <button class="col-arrow" id="arr-sharedWith">▾</button></div>
+              <div class="col-dropdown" id="dd-sharedWith" onclick="event.stopPropagation()">
                 <div class="col-dd-item selected" data-val="all" onclick="setColFilter('sharedWith','all',event)">All</div>
                 <div class="col-dd-item" data-val="only-me" onclick="setColFilter('sharedWith','only-me',event)">Only me</div>
                 <div class="col-dd-item" data-val="others" onclick="setColFilter('sharedWith','others',event)">Shared with others</div>
               </div>
             </th>
             <th style="position:relative">
-              <div class="col-header">Size <button class="col-arrow" id="arr-size" onclick="toggleDropdown('size',event)">↕</button></div>
-              <div class="col-dropdown" id="dd-size">
+              <div class="col-header" onclick="toggleDropdown('size',event)">Size <button class="col-arrow" id="arr-size">↕</button></div>
+              <div class="col-dropdown" id="dd-size" onclick="event.stopPropagation()">
                 <div class="col-dd-item" data-dir="desc" onclick="setColSort('size','desc',event)">Largest first</div>
                 <div class="col-dd-item" data-dir="asc" onclick="setColSort('size','asc',event)">Smallest first</div>
               </div>
             </th>
             <th style="position:relative">
-              <div class="col-header">Created <button class="col-arrow" id="arr-created" onclick="toggleDropdown('created',event)">↕</button></div>
-              <div class="col-dropdown" id="dd-created">
+              <div class="col-header" onclick="toggleDropdown('created',event)">Created <button class="col-arrow" id="arr-created">↕</button></div>
+              <div class="col-dropdown" id="dd-created" onclick="event.stopPropagation()">
                 <div class="col-dd-item" data-dir="desc" onclick="setColSort('created','desc',event)">Newest first</div>
                 <div class="col-dd-item" data-dir="asc" onclick="setColSort('created','asc',event)">Oldest first</div>
               </div>
             </th>
             <th style="position:relative">
-              <div class="col-header">Last Modified <button class="col-arrow" id="arr-modified" onclick="toggleDropdown('modified',event)">↕</button></div>
-              <div class="col-dropdown" id="dd-modified">
+              <div class="col-header" onclick="toggleDropdown('modified',event)">Last Modified <button class="col-arrow" id="arr-modified">↕</button></div>
+              <div class="col-dropdown" id="dd-modified" onclick="event.stopPropagation()">
                 <div class="col-dd-item" data-dir="desc" onclick="setColSort('modified','desc',event)">Newest first</div>
                 <div class="col-dd-item" data-dir="asc" onclick="setColSort('modified','asc',event)">Oldest first</div>
               </div>
